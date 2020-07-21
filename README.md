@@ -19,7 +19,7 @@ In this code, I used a hueristic calculation known as the Manhattan Distance.
 The Manhattan Distance calculates how far off the current node is from the goal node on the x axis, and adds that to how far off it is on the y axis.
 
 ## f = g + h
-When we look at which node to explore next, we consider the f cost. The f cost is simply the sum of the heuristic cost (h) and g. Note that g is calculated at the number of nodes away the current node is from the start in the path it took to get to the current node.
+When we look at which node to explore next, we consider the f cost. The f cost is simply the sum of the heuristic cost (h) and g. Note that g is calculated as the number of nodes away the current node is from the start in the path it took to get to the current node.
 
 'g' is important, because if we only take into account the heuristic cost 'h', we basically have best-first search.
 On the flip side, if we only take 'g' into account, we basically end up with Dijkstra's algorithm.
