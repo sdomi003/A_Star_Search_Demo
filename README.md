@@ -13,7 +13,7 @@ A* is guaranteed to discover the optimal path IF
 - The heuristic cost must match the real cost in that a lower heuristic cost must mean a lower real cost when compare with another node that has a higher heuristic cost, despite the cost numbers not needing to be accurate. This is called monotonic.
 ## What is a heuristic?
 When we talk about heuristic cost, we mean the cost assigned to a node that gives us a good idea of how much work it will take to get to the goal node from this node. So for example, a node really far away from the goal node should have a much higher heuristic cost than that of a node right next to the goal node.
-The actual formula one uses to calculate heuristic cost can be changed anytime, and will likely yeild better results in certain cases.
+The actual formula one uses to calculate heuristic cost can be changed anytime, and will likely yield better results in certain cases.
 In this code, I used a hueristic calculation known as the Manhattan Distance.
 
 The Manhattan Distance calculates how far off the current node is from the goal node on the x axis, and adds that to how far off it is on the y axis.
