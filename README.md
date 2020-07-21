@@ -5,7 +5,7 @@ This script is LIVE at https://sdomi003.github.io/A_Star_Search_Demo/
 
 Please do give it a try :)
 
-# About A* Search
+## About A* Search
 To start, the goal of A* is to find a path from a starting point to an ending point.
 A* combines the approaches of the greedy best-first search and Dijkstra's algorithm.
 A* is guaranteed to discover the optimal path IF 
