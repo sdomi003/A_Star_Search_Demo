@@ -179,12 +179,12 @@ function AStarStart() {
 }
 function createButtons() {
   button = createButton('Start Path Finding');
-  button.position(70, 340);
+  button.position(70, 380);
   button.style('background-color', '#F3C98B');
   button.mousePressed(AStarStart);
   
   clearButton = createButton('CLEAR');
-  clearButton.position(200, 340);
+  clearButton.position(200, 380);
   clearButton.style('background-color', '#F3C98B');
   clearButton.mousePressed(eraseBoard);
 }
