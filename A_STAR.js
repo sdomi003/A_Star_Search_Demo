@@ -30,7 +30,7 @@ function draw() {
   createObstacle();
   createStartAndEnd();
   if (startPathFinding) {
-    frameRate(speedSlider.value()/4);
+    frameRate(1 + speedSlider.value()/4);
     AStar();
   }
   displayBoard();
