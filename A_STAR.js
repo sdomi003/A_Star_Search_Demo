@@ -2,27 +2,55 @@ let grid = [];
 let openList = [];
 let closedList = [];
 let startPathFinding = false;
+let drawButtons = true;
+let speedSlider;
+
 function setup() {
   createCanvas(400, 400);
   initGrid();
   clearBoard();
-  displayBoard(); 
+  displayBoard();
   openList.push(grid[0][0]);
   grid[0][0].g = 0;
+  
+
+  
+  
 }
 
 function draw() {
-  createButtons();
+  if (drawButtons) {
+      createButtons();
+      
+      drawButtons = false;
+  }
+  
+
   background(220);
   createObstacle();
   createStartAndEnd();
-  createButtons();
   if (startPathFinding) {
+    frameRate(speedSlider.value()/4);
     AStar();
   }
   displayBoard();
+  textSize(15);
+  text('edit drawing speed (b4 or during): ', 10, 380);
 }
+//--------------
+// re-draws the path without clearing anything else
+function reDrawPath() {
+  clearAllButObstacles();
 
+  
+
+  openList = [];
+  openList.push(grid[0][0]);
+  grid[0][0].g = 0;
+
+  startPathFinding = true;
+}
+//----------------------------------------------------------------------------
 // debugging
 function printOpenListPicks (pick) {
   print("\n\n\n");
@@ -44,7 +72,7 @@ function AStar() {
          lowestSeen = openList[i].f;
        }
     }
-    printOpenListPicks(lowestIndex);
+    //printOpenListPicks(lowestIndex);
     // now I have the index of the node with the lowest F cost
     let currNode = openList[lowestIndex];
     
@@ -179,14 +207,22 @@ function AStarStart() {
 }
 function createButtons() {
   button = createButton('Start Path Finding');
-  button.position(70, 380);
+  button.position(30, 480);
   button.style('background-color', '#F3C98B');
   button.mousePressed(AStarStart);
+
+  clearButton = createButton('Re-draw Path');
+  clearButton.position(180, 480);
+  clearButton.style('background-color', '#F3C98B');
+  clearButton.mousePressed(reDrawPath);
   
-  clearButton = createButton('CLEAR');
-  clearButton.position(200, 380);
+  clearButton = createButton('CLEAR ALL');
+  clearButton.position(300, 480);
   clearButton.style('background-color', '#F3C98B');
   clearButton.mousePressed(eraseBoard);
+
+  speedSlider = createSlider(0, 255, 100);
+  speedSlider.position(250, 520);
 }
 
 function initGrid() {
@@ -205,8 +241,11 @@ function initGrid() {
   }
 }
 
+
+
 // removes everything, including obstacles
 function clearBoard() {
+  frameRate(60);
   startPathFinding = false;
   for (let i = 0; i < grid.length; i++) {
     for (let j  = 0; j < grid[0].length; j++) {
@@ -233,6 +272,22 @@ function refreshBoard() {
   }
 }
 
+// Doesn't remove obstacles.
+function clearAllButObstacles() {
+  for (let i = 0; i < grid.length; i++) {
+    for (let j  = 0; j < grid[0].length; j++) {
+      if (grid[i][j].fillType != 1) {
+        grid[i][j].fillType = 0;
+        grid[i][j].parent_i = -1;
+        grid[i][j].parent_j = -1;
+        grid[i][j].g = Infinity;
+        grid[i][j].f = Infinity;
+        grid[i][j].alreadyExplored = false;
+      }
+    }
+  }
+}
+
 function displayBoard() {
   for (let i = 0; i < grid.length; i++) {
     for (let j  = 0; j < grid[0].length; j++) {
@@ -244,18 +299,16 @@ function displayBoard() {
 
 function createObstacle() {
   if (mouseIsPressed) {
-   for (let i = 0; i < grid.length; i++) {
-    for (let j  = 0; j < grid[0].length; j++) {
-      let d = dist(mouseX, mouseY, grid[i][j].x + 5, grid[i][j].y + 5);
-      if (d < 10) {
-        grid[i][j].fillType = 1;
+    for (let i = 0; i < grid.length; i++) {
+      for (let j  = 0; j < grid[0].length; j++) {
+        let d = dist(mouseX, mouseY, grid[i][j].x + 5, grid[i][j].y + 5);
+        if (d < 10) {
+          grid[i][j].fillType = 1;
+        }
+        
       }
-       
     }
   }
-  }
-  displayBoard();
-  
 }
 
 class Square {
