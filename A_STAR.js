@@ -1,9 +1,18 @@
+/**
+ * By Samuel Dominguez - UC Riverside Class of 2020
+ * Written using P5.js libaries for the visuals
+ */
+
 let grid = [];
 let openList = [];
 let closedList = [];
+
 let startPathFinding = false;
 let drawButtons = true;
+
 let speedSlider;
+
+// this is the gradient value for explored cells.
 let globalInterVal = .05;
 
 let BOARD_WIDTH = 20;
@@ -15,21 +24,19 @@ function setup() {
   clearBoard();
   displayBoard();
   openList.push(grid[0][0]);
-  grid[0][0].g = 0;
-  
-
-  
-  
+  grid[0][0].g = 0;  
 }
 
+/**
+ * This method is called every frame. 
+ * draw() is a method picked up by p5.js library
+ */
 function draw() {
   if (drawButtons) {
       createButtons();
       
       drawButtons = false;
   }
-  
-
   background(220);
   createObstacle();
   createStartAndEnd();
@@ -41,22 +48,18 @@ function draw() {
   textSize(15);
   text('edit drawing speed (b4 or during): ', 10, 380);
 }
-//--------------
-// re-draws the path without clearing anything else
+
+// re-draws the path without clearing the obstacles
 function reDrawPath() {
   clearAllButObstacles();
-
-  
-
   openList = [];
   openList.push(grid[0][0]);
   grid[0][0].g = 0;
-
   startPathFinding = true;
   globalInterVal = .05;
 }
-//----------------------------------------------------------------------------
-// debugging
+
+// used for debugging
 function printOpenListPicks (pick) {
   print("\n\n\n");
   for (let i = 0; i < openList.length; ++i) {
@@ -66,7 +69,11 @@ function printOpenListPicks (pick) {
   print("\n\n\n");
 }
 
-
+/**
+ * The main A* algorithm.
+ * This method is called every frame if startPathFinding == true
+ * So there is no while() loop because this method is basically in a giant while loop
+ */
 function AStar() {
   if (openList.length > 0) {
     let lowestIndex = 0;
@@ -95,7 +102,6 @@ function AStar() {
     openList.splice(lowestIndex, 1);
     currNode.alreadyExplored = true;
     
-    
     // process all available neighbors
     let neighbors = getNeighbors(currNode);
     
@@ -118,7 +124,11 @@ function AStar() {
   }
 }
 
-
+/**
+ * Lights up the winning path from start to end.
+ * Today, the winning path is the same color as the regular path when it is being explored.
+ * But it can be changed.
+ */
 function lightUpWinningPath(node) {
   console.log("WINNING PATH FOUND");
   curr = node;
@@ -129,6 +139,12 @@ function lightUpWinningPath(node) {
   startPathFinding = false;
 }
 
+/**
+ * For some reason, back when I wrote this I decided to represent the grid as
+ * grid[column][row]
+ * So, here i = column and j = row 
+ * I'm not sure why I did this :/ 
+ */
 function getNeighbors(node) {
   let i = node.i;
   let j = node.j;
@@ -242,8 +258,6 @@ function initGrid() {
   }
 }
 
-
-
 // removes everything, including obstacles
 function clearBoard() {
   frameRate(60);
@@ -262,7 +276,7 @@ function clearBoard() {
   }
 }
 
-// Doesn't remove obstacles.
+// This method is called every frame to re-draw the whole board with all the updated grid box colors
 function refreshBoard() {
   for (let i = 0; i < grid.length; i++) {
     for (let j  = 0; j < grid[0].length; j++) {
@@ -281,7 +295,7 @@ function refreshBoard() {
   }
 }
 
-// Doesn't remove obstacles.
+// Executed when user wants to re-run the A* search on their existing obstacle course
 function clearAllButObstacles() {
   for (let i = 0; i < grid.length; i++) {
     for (let j  = 0; j < grid[0].length; j++) {
