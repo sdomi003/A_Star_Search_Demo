@@ -4,6 +4,10 @@ let closedList = [];
 let startPathFinding = false;
 let drawButtons = true;
 let speedSlider;
+let globalInterVal = .05;
+
+let BOARD_WIDTH = 20;
+let BOARD_HEIGHT = 15;
 
 function setup() {
   createCanvas(400, 400);
@@ -49,6 +53,7 @@ function reDrawPath() {
   grid[0][0].g = 0;
 
   startPathFinding = true;
+  globalInterVal = .05;
 }
 //----------------------------------------------------------------------------
 // debugging
@@ -107,17 +112,12 @@ function AStar() {
         neighbor.parent = currNode;
       }
     }
+  } else {
+    startPathFinding = false;
+    refreshBoard();
   }
 }
 
-function lightUpCurrentPath(node) {
-  curr = node;
-  while (curr) {
-    curr.fillType = 2;
-    curr = curr.parent;
-  }
-  displayBoard();
-}
 
 function lightUpWinningPath(node) {
   console.log("WINNING PATH FOUND");
@@ -135,7 +135,7 @@ function getNeighbors(node) {
   let neighbors = [];
   
   // down
-  if (i+1 < 15 && grid[i+1][j].fillType != 1) { // TODO grid[0].length instead of 19
+  if (i+1 < BOARD_HEIGHT && grid[i+1][j].fillType != 1) {
     if (!grid[i+1][j].alreadyExplored) {
       neighbors.push(grid[i+1][j]);
     }
@@ -149,7 +149,7 @@ function getNeighbors(node) {
   }
   
   // right
-  if (j + 1 < grid[0].length && grid[i][j+1].fillType != 1) {
+  if (j + 1 < BOARD_WIDTH && grid[i][j+1].fillType != 1) {
     if (!grid[i][j+1].alreadyExplored) {
       neighbors.push(grid[i][j+1]);
     }
@@ -170,7 +170,7 @@ function getNeighbors(node) {
   }
   
   // lower left corner, i + 1, j - 1
-  if (j-1>= 0 && i+1 <= 14 && grid[i+1][j-1].fillType != 1) {
+  if (j-1>= 0 && i+1 < BOARD_HEIGHT && grid[i+1][j-1].fillType != 1) {
     if (!grid[i+1][j-1].alreadyExplored) {
       neighbors.push(grid[i+1][j-1]);
     }
@@ -178,7 +178,7 @@ function getNeighbors(node) {
   
   
   // upper right corner, i - 1, j + 1
-  if (j+1 <= 14 && i-1 >= 0 && grid[i-1][j+1].fillType != 1) {
+  if (j+1 < BOARD_WIDTH && i-1 >= 0 && grid[i-1][j+1].fillType != 1) {
     if (!grid[i-1][j+1].alreadyExplored) {
       neighbors.push(grid[i-1][j+1]);
     }
@@ -186,7 +186,7 @@ function getNeighbors(node) {
   
   
   // lower right corner, i + 1, j + 1
-  if (j+1<=19 && i+1 <= 14 && grid[i+1][j+1].fillType != 1) {
+  if (j+1< BOARD_WIDTH && i+1 <= 14 && grid[i+1][j+1].fillType != 1) {
     if (!grid[i+1][j+1].alreadyExplored) {
       neighbors.push(grid[i+1][j+1]);
     }
@@ -205,6 +205,7 @@ function createStartAndEnd() {
 function AStarStart() {
   startPathFinding = true; 
 }
+
 function createButtons() {
   button = createButton('Start Path Finding');
   button.position(30, 480);
@@ -265,8 +266,16 @@ function clearBoard() {
 function refreshBoard() {
   for (let i = 0; i < grid.length; i++) {
     for (let j  = 0; j < grid[0].length; j++) {
-      if (grid[i][j].fillType != 1) {
+      if (grid[i][j].fillType != 1 && grid[i][j].fillType != 2 && grid[i][j].fillType != 5 && grid[i][j].fillType != 4) {
         grid[i][j].fillType = 0;
+      } else if ((grid[i][j].fillType == 2 || grid[i][j].fillType == 5) && !grid[i][j].alreadyExplored) {
+        // mark as explored but not part of winning
+        print("set fill type to " + 4)
+        grid[i][j].fillType = 4;
+        grid[i][j].interVal = globalInterVal;
+        globalInterVal += .008;
+      } else if (grid[i][j].fillType == 2 || grid[i][j].fillType == 5) {
+        grid[i][j].fillType = 4;
       }
     }
   }
@@ -283,6 +292,7 @@ function clearAllButObstacles() {
         grid[i][j].g = Infinity;
         grid[i][j].f = Infinity;
         grid[i][j].alreadyExplored = false;
+
       }
     }
   }
@@ -311,6 +321,18 @@ function createObstacle() {
   }
 }
 
+function lightUpCurrentPath(node) {
+  curr = node;
+  // fill in head
+  curr.fillType = 5;  
+  curr = curr.parent;
+  while (curr) {
+    curr.fillType = 2;
+    curr = curr.parent;
+  }
+  displayBoard();
+}
+
 class Square {
   constructor(x, y, s, i, j, parent_i, parent_j) {
     this.x = x;
@@ -320,6 +342,8 @@ class Square {
     // 1 = obstacle
     // 2 = draw path
     // 3 = winning path
+    // 4 = explored but not part of winning path
+    // 5 = head of current path
     this.fillType = 0;
     this.i = i;
     this.j = j;
@@ -328,6 +352,7 @@ class Square {
     this.h = Math.abs(this.i - 14) +  Math.abs(this.j - 19);
     this.f = Infinity;
     this.alreadyExplored = false;
+    this.interVal = 0;
   }
   
   display() {
@@ -340,33 +365,60 @@ class Square {
     } else if (this.fillType == 3) {
       // is winning path
       this.displayWinning();
+    } else if (this.fillType == 4) {
+      this.displayExploredButNotPartOfWinning();
+    } else if (this.fillType == 5) {
+      this.displayHead();
     } else {
       console.log("ERROR, invalid fill type.");
     }
   }
   
   displayBlank() {
-    fill('#9CF6F6');
+    fill(WHITE);
     square(this.x, this.y, this.s); 
   }
   
   displayFilled() {
-    fill('#F3C98B');
+    fill(GOLD);
     square(this.x, this.y, this.s);
   }
   
   displayObstacle() {
-    fill('#DAA588');
+    fill(BLACK);
     square(this.x, this.y, this.s);
   }
   displayWinning() {
-    fill('#FFDF00');
+    fill(GOLD);
     square(this.x, this.y, this.s);
   }
-  
+  displayExploredButNotPartOfWinning() {
+    let c1 = color(WHITE);
+    let c2 = color(RED);
+    //print("inter val" + this.interVal)
+    let interA = lerpColor(c1, c2, this.interVal);
+    //fill('#d4b7e1');
+    fill(interA);
+    square(this.x, this.y, this.s);
+  }
+  displayHead() {
+    fill(GREEN);
+    square(this.x, this.y, this.s);
+  }  
 }
 
+let BLACK = "#2d4059";
+
+let GOLD = "#ffb400";
+
+let WHITE = "#f6f6f6";
+
+let RED = "#ea5455";
+
+let GREEN = "#49beb7";
+
 function eraseBoard(){
+  globalInterVal = .05;
   grid = [];
   openList = [];
   closedList = [];
